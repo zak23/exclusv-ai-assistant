@@ -74,7 +74,7 @@ Exclusv AI Assistant is a powerful WordPress plugin that integrates an AI-powere
 
 ## Support
 
-For support, feature requests, or bug reports, please visit our [support forum](https://support.exclusv.ai) or contact our customer service team.
+For support, feature requests, or bug reports, please visit our [website](https://exclusv.ai) or contact our customer service team.
 
 ## License
 
@@ -83,5 +83,3 @@ This plugin is licensed under the GPL v2 or later.
 ---
 
 Enhance your website with intelligent, interactive conversations using Exclusv AI Assistant!
-
-Main
