@@ -83,3 +83,5 @@ This plugin is licensed under the GPL v2 or later.
 ---
 
 Enhance your website with intelligent, interactive conversations using Exclusv AI Assistant!
+
+Main
