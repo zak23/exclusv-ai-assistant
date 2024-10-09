@@ -1,74 +1,17 @@
-# Ignore WordPress core files
-wp-admin/
-wp-includes/
-wp-content/index.php
-wp-content/plugins/index.php
-wp-content/themes/index.php
+# Ignore everything
+*
 
-# Ignore other plugins and themes
-wp-content/plugins/*
-!wp-content/plugins/exclusv-ai-assistant/
-wp-content/themes/*
+# But not these files...
+!.gitignore
+!exclusv-ai-assistant.php
+!README.md
+!style.css
 
-# Ignore configuration files
-wp-config.php
-wp-config-sample.php
+# ...and not these folders...
+!includes/
+!assets/
 
-# Ignore other WordPress generated files
-wp-content/upgrade/
-wp-content/uploads/
-wp-content/blogs.dir/
-
-# Ignore node dependency directories
-node_modules/
-
-# Ignore log files and databases
-*.log
-*.sql
-*.sqlite
-
-# Ignore OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Ignore editor files
-*.sublime-project
-*.sublime-workspace
-*.komodoproject
-.idea/
-*.swp
-*.swo
-
-# Ignore backup files
-*.bak
-*.gho
-*.ori
-*.orig
-*.tmp
-
-# Ignore compiled files
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
-
-# Ignore packaged files
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# Ignore composer files
-composer.phar
-/vendor/
+# ...and not these specific files
+!includes/*.php
+!assets/*.css
+!assets/*.js
