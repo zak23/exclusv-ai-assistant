@@ -196,7 +196,7 @@ function exclusv_ai_chat_shortcode()
         }
 
         function sendMessageToServer(message) {
-            console.log('sendMessageToServer called with message:', message);
+            // console.log('sendMessageToServer called with message:', message);
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '<?php echo admin_url('admin-ajax.php'); ?>');
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -250,12 +250,12 @@ function exclusv_ai_chat_shortcode()
         }
 
         function saveChatMessage(chatId, startTime, sender, message) {
-            console.log('saveChatMessage called with:', {
-                chatId,
-                startTime,
-                sender,
-                message
-            });
+            // console.log('saveChatMessage called with:', {
+            //     chatId,
+            //     startTime,
+            //     sender,
+            //     message
+            // });
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '<?php echo admin_url('admin-ajax.php'); ?>');
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
