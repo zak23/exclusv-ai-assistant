@@ -161,6 +161,33 @@ function exclusv_ai_register_settings()
         ['label_for' => 'exclusv_ai_selected_pages']
     );
 
+    add_settings_section(
+        'exclusv_ai_appearance_settings_section',
+        'Appearance Settings',
+        function () {
+            echo '<p>Customize the appearance of the chat interface.</p>';
+        },
+        'exclusv_ai_settings'
+    );
+
+    add_settings_field(
+        'exclusv_ai_header_color',
+        'Chat Header Color',
+        'exclusv_ai_header_color_field',
+        'exclusv_ai_settings',
+        'exclusv_ai_appearance_settings_section',
+        ['label_for' => 'exclusv_ai_header_color']
+    );
+
+    add_settings_field(
+        'exclusv_ai_send_button_color',
+        'Send Button Color',
+        'exclusv_ai_send_button_color_field',
+        'exclusv_ai_settings',
+        'exclusv_ai_appearance_settings_section',
+        ['label_for' => 'exclusv_ai_send_button_color']
+    );
+
     register_setting('exclusv_ai_settings', 'exclusv_ai_api_key');
     register_setting('exclusv_ai_settings', 'exclusv_ai_chat_title');
     register_setting('exclusv_ai_settings', 'exclusv_ai_initial_message');
@@ -172,6 +199,8 @@ function exclusv_ai_register_settings()
     register_setting('exclusv_ai_settings', 'exclusv_ai_email_prompt_message');
     register_setting('exclusv_ai_settings', 'exclusv_ai_selected_pages');
     register_setting('exclusv_ai_settings', 'exclusv_ai_show_on_all_pages');
+    register_setting('exclusv_ai_settings', 'exclusv_ai_header_color');
+    register_setting('exclusv_ai_settings', 'exclusv_ai_send_button_color');
 }
 add_action('admin_menu', 'exclusv_ai_register_settings');
 
@@ -338,4 +367,16 @@ function exclusv_ai_show_on_all_pages_field() {
     echo '<input type="checkbox" id="exclusv_ai_show_on_all_pages" name="exclusv_ai_show_on_all_pages" value="1" ' . checked(1, $show_on_all_pages, false) . '>';
     echo '<label for="exclusv_ai_show_on_all_pages">Automatically add the chat interface to all pages</label>';
     echo '<p class="description">When checked, the chat interface will be automatically added to the bottom of all pages.</p>';
+}
+
+function exclusv_ai_header_color_field() {
+    $header_color = get_option('exclusv_ai_header_color', '#1f86be');
+    echo '<input type="color" id="exclusv_ai_header_color" name="exclusv_ai_header_color" value="' . esc_attr($header_color) . '">';
+    echo '<p class="description">Choose the color for the chat header bar.</p>';
+}
+
+function exclusv_ai_send_button_color_field() {
+    $send_button_color = get_option('exclusv_ai_send_button_color', '#007bff');
+    echo '<input type="color" id="exclusv_ai_send_button_color" name="exclusv_ai_send_button_color" value="' . esc_attr($send_button_color) . '">';
+    echo '<p class="description">Choose the color for the send button.</p>';
 }

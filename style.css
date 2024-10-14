@@ -12,7 +12,7 @@
 }
 
 #chat-header {
-  background-color: #1f86be;
+  background-color: var(--header-color, #1f86be);
   color: white;
   font-weight: bold;
   border-top-left-radius: 10px;
@@ -68,6 +68,7 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s;
   z-index: 9999;
+  background-color: var(--header-color, #1f86be);
 }
 
 #chat-button:hover {

@@ -411,6 +411,14 @@ function exclusv_ai_chat_shortcode()
                 '&start_time=' + encodeURIComponent(localStorage.getItem('startTime'));
             xhr.send(data);
         }
+
+        // Apply custom colors
+        var headerColor = '<?php echo esc_js(get_option('exclusv_ai_header_color', '#1f86be')); ?>';
+        var sendButtonColor = '<?php echo esc_js(get_option('exclusv_ai_send_button_color', '#007bff')); ?>';
+
+        document.getElementById('chat-header').style.backgroundColor = headerColor;
+        document.getElementById('send-button').style.backgroundColor = sendButtonColor;
+        document.getElementById('chat-button').style.backgroundColor = headerColor;
     </script>
 <?php
     return ob_get_clean();
