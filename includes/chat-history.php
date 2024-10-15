@@ -47,7 +47,7 @@ function exclusv_ai_save_chat_history($chat_id, $start_time, $sender, $message, 
     // Check if the table exists
     if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name)) != $table_name) {
         error_log("Chat history table does not exist: $table_name");
-        return; // Exit the function if the table doesn't exist
+        return false; // Exit the function if the table doesn't exist
     }
 
     $result = $wpdb->insert(
@@ -64,8 +64,10 @@ function exclusv_ai_save_chat_history($chat_id, $start_time, $sender, $message, 
 
     if ($result === false) {
         error_log("Failed to insert chat history: " . $wpdb->last_error);
+        return false;
     } else {
         error_log("Successfully inserted chat history with ID: " . $wpdb->insert_id);
+        return true;
     }
 }
 
@@ -251,3 +253,4 @@ add_action('admin_init', function () {
         exit;
     }
 });
+

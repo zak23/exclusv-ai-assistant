@@ -2,13 +2,13 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.6
+Version: 1.0.7  
 Author: Exclusv.ai
 Author URI: https://www.exclusv.ai
 */
 
 // Define plugin version constant
-define('EXCLUSV_AI_VERSION', '1.0.6');
+define('EXCLUSV_AI_VERSION', '1.0.7');
 
 // Include the shortcodes file
 require_once plugin_dir_path(__FILE__) . 'includes/enqueue-scripts.php';
@@ -315,10 +315,17 @@ function exclusv_ai_save_chat_message()
         $sender = isset($_POST['sender']) ? sanitize_text_field($_POST['sender']) : '';
         $message = isset($_POST['message']) ? wp_kses_post($_POST['message']) : '';
 
+        error_log("Received data - chat_id: $chat_id, start_time: $start_time, sender: $sender, message: $message");
+
         if (!empty($chat_id) && !empty($start_time) && !empty($sender) && !empty($message)) {
-            exclusv_ai_save_chat_history($chat_id, $start_time, $sender, $message);
-            error_log('Chat message saved successfully');
-            wp_send_json_success();
+            $result = exclusv_ai_save_chat_history($chat_id, $start_time, $sender, $message);
+            if ($result === false) {
+                error_log('Failed to save chat message');
+                wp_send_json_error('Failed to save chat message');
+            } else {
+                error_log('Chat message saved successfully');
+                wp_send_json_success();
+            }
         } else {
             error_log('Invalid data for saving chat message');
             wp_send_json_error('Invalid data');
