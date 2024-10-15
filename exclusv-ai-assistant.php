@@ -97,7 +97,9 @@ function exclusv_ai_chat_proxy()
         7. Maintain a professional and helpful tone throughout the conversation.
         8. Do not generate, produce, edit, manipulate or create images in any way.
         9. Do not discuss or reveal any information about your training data, model architecture, or the specifics of how you were created.
-        10. When mentioning links or pages, do not format them as markdown links. Instead, mention them naturally in the text, like 'You can find more information on our Contact Us page' or 'Visit our About Us section for details'.
+        10. When mentioning links or pages, do not use any kind of formatting. Simply write out the full URL or page name as plain text. For example, write 'You can find more information at https://example.com/contact-us' or 'Visit our About Us page for details'.
+        11. Do not sign off with any personal or company information. End your responses naturally without a formal signature.
+        12. Never use markdown formatting for links or any other text. Always provide plain text responses.
         ";
 
         $merged_system_prompt = $bot_system_prompt . "\n\n" . $hard_set_data;
@@ -176,9 +178,8 @@ function exclusv_ai_chat_proxy()
 
             if ($http_code === 200) {
                 $response_data = json_decode($response, true);
-                // Remove this line:
-                // $assistant_message = $response_data['choices'][0]['message']['content'];
-                // exclusv_ai_save_chat_history($chat_id, $start_time, 'assistant', $assistant_message);
+                // Add this line for debugging
+                error_log("API response: " . print_r($response_data, true));
                 wp_send_json_success($response_data);
                 exit;
             } else {
@@ -381,6 +382,15 @@ function exclusv_ai_admin_notices() {
     }
 }
 
+// Add this new function near the end of the file, before the closing PHP tag
+function exclusv_ai_localize_script() {
+    wp_localize_script('exclusv-ai-chat-js', 'exclusvAiSettings', array(
+        'messageLimit' => get_option('exclusv_ai_message_limit', 10),
+        'emailPromptMessage' => get_option('exclusv_ai_email_prompt_message', "Enter your email to continue talking to " . get_bloginfo('name')),
+    ));
+}
+add_action('wp_enqueue_scripts', 'exclusv_ai_localize_script');
+
 // Add this new function near the end of the file
 function exclusv_ai_add_action_links($links) {
     $settings_link = '<a href="' . admin_url('options-general.php?page=exclusv_ai_settings') . '">Settings</a>';
@@ -399,3 +409,14 @@ add_action('admin_init', function () {
         exclusv_ai_manually_create_chat_history_table();
     }
 });
+
+// Add this function near the end of the file
+function exclusv_ai_sanitize_message_limit($value) {
+    return intval($value);
+}
+
+// Update the register_setting call for exclusv_ai_message_limit
+register_setting('exclusv_ai_settings', 'exclusv_ai_message_limit', array(
+    'sanitize_callback' => 'exclusv_ai_sanitize_message_limit',
+    'default' => 10
+));

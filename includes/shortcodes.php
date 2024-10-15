@@ -86,6 +86,10 @@ function exclusv_ai_chat_shortcode()
             }
         });
 
+        // Add this near the top of the JavaScript code
+        console.log('Initial messageCount:', messageCount);
+        console.log('Message limit:', exclusvAiSettings.messageLimit);
+
         function toggleChatVisibility() {
             if (chatContainer.classList.contains('open')) {
                 chatContainer.classList.remove('open');
@@ -109,6 +113,7 @@ function exclusv_ai_chat_shortcode()
             }
         }
 
+        // Update the sendMessage function
         function sendMessage() {
             var message = userInput.value.trim();
             if (message !== '') {
@@ -116,15 +121,18 @@ function exclusv_ai_chat_shortcode()
                 sendMessageToServer(message);
                 userInput.value = '';
 
-                messageCount++;
+                messageCount = parseInt(messageCount) + 1;
                 localStorage.setItem('messageCount', messageCount);
 
-                // Retrieve the message limit from the plugin settings
-                var messageLimit = <?php echo esc_js(get_option('exclusv_ai_message_limit', 10)); ?>;
+                console.log('Updated messageCount:', messageCount);
+                console.log('Message limit:', exclusvAiSettings.messageLimit);
+
+                // Use the localized message limit
+                var messageLimit = parseInt(exclusvAiSettings.messageLimit);
 
                 if (messageCount >= messageLimit) {
-                    chatInput.style.display = 'none';
-                    emailCapture.style.display = 'block';
+                    console.log('Message limit reached. Showing email capture.');
+                    showEmailCapture();
                 }
 
                 // Store the user's message in the chat history
@@ -140,6 +148,15 @@ function exclusv_ai_chat_shortcode()
                 });
                 localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
             }
+        }
+
+        // Add this new function
+        function showEmailCapture() {
+            chatInput.style.display = 'none';
+            emailCapture.style.display = 'block';
+            // Update the email prompt message
+            document.querySelector('#email-capture h6').textContent = exclusvAiSettings.emailPromptMessage;
+            console.log('Email capture displayed');
         }
 
         // Update the submitEmail function to prevent form submission if it exists
@@ -373,20 +390,24 @@ function exclusv_ai_chat_shortcode()
             }
 
             // Retrieve the message count from local storage
-            messageCount = localStorage.getItem('messageCount') || 0;
+            messageCount = parseInt(localStorage.getItem('messageCount')) || 0;
+            console.log('Loaded messageCount:', messageCount);
 
-            // Retrieve the message limit from the plugin settings
-            var messageLimit = <?php echo esc_js(get_option('exclusv_ai_message_limit', 10)); ?>;
+            // Use the localized message limit
+            var messageLimit = parseInt(exclusvAiSettings.messageLimit);
+            console.log('Loaded message limit:', messageLimit);
 
             // Check if the email has been submitted
             var emailSubmitted = localStorage.getItem('emailSubmitted');
 
             if (messageCount >= messageLimit && emailSubmitted !== 'true') {
-                chatInput.style.display = 'none';
-                emailCapture.style.display = 'block';
+                console.log('Message limit reached on load. Showing email capture.');
+                showEmailCapture();
             } else if (emailSubmitted === 'true') {
+                console.log('Email already submitted. Showing thank you message.');
                 showThankYouMessage();
             } else {
+                console.log('Showing chat input.');
                 chatInput.style.display = 'block';
                 emailCapture.style.display = 'none';
             }

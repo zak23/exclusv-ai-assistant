@@ -89,12 +89,17 @@
 }
 
 /* Update the send button style */
-#chat-input button {
-  background-color: var(--send-button-color, #33b89f) !important; /* Use the send button color variable */
+#chat-input button,
+#submit-email {
+  background-color: var(--send-button-color, #33b89f) !important; /* Use the same color variable */
   color: white !important;
   border: none !important;
   padding: 5px 10px !important;
   cursor: pointer !important;
+  height: 35.2px !important; /* Set a fixed height for consistency */
+  line-height: 25px !important; /* Center text vertically */
+  display: inline-block !important;
+  box-sizing: border-box !important; /* Ensure padding doesn't affect height */
 }
 
 .typing-dots {
@@ -147,7 +152,7 @@
 }
 
 #email-capture {
-  display: none !important;
+  display: none;
   padding: 15px !important;
   text-align: center !important;
   background-color: #f8f9fa !important;
@@ -164,8 +169,19 @@
   margin-bottom: 10px !important;
 }
 
+/* Add these styles for the email submit button */
 #submit-email {
+  background-color: var(--send-button-color, #33b89f) !important; /* Use the same color variable */
+  color: white !important;
+  border: none !important;
   padding: 5px 10px !important;
+  cursor: pointer !important;
+  /* Remove the transition for background color */
+}
+
+/* Remove this hover effect */
+#submit-email:hover {
+  /* background-color: darken(var(--send-button-color, #33b89f), 10%) !important; */
 }
 
 .error {
