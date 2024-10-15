@@ -2,16 +2,46 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.3
+Version: 1.0.4
 Author: Zak Ozbourne
 Author URI: https://www.zakozbourne.com
 */
+
+// Define plugin version constant
+define('EXCLUSV_AI_VERSION', '1.0.4');
 
 // Include the shortcodes file
 require_once plugin_dir_path(__FILE__) . 'includes/enqueue-scripts.php';
 require_once plugin_dir_path(__FILE__) . 'includes/shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/chat-history.php';
 require_once plugin_dir_path(__FILE__) . 'includes/settings-page.php';
+
+// Add activation hook
+register_activation_hook(__FILE__, 'exclusv_ai_activate');
+
+function exclusv_ai_activate() {
+    // Set the initial version
+    add_option('exclusv_ai_version', EXCLUSV_AI_VERSION);
+    
+    // Run any necessary database updates or initial setup
+    exclusv_ai_update_routine();
+}
+
+// Add update routine
+function exclusv_ai_update_routine() {
+    $current_version = get_option('exclusv_ai_version', '0');
+    
+    if (version_compare($current_version, EXCLUSV_AI_VERSION, '<')) {
+        // Perform update tasks here
+        // For example, you might need to update database schema or plugin settings
+        
+        // Update the version in the database
+        update_option('exclusv_ai_version', EXCLUSV_AI_VERSION);
+    }
+}
+
+// Run the update routine on plugins_loaded hook
+add_action('plugins_loaded', 'exclusv_ai_update_routine');
 
 
 // Enqueue the plugin's CSS file and Font Awesome library
