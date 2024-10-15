@@ -219,8 +219,6 @@ h5 {
 #chat-powered-by a {
   color: #33b89f !important;
   text-decoration: none !important;
-  /* Add this line for the title attribute */
-  title: "Visit Exclusv.ai for more information" !important;
 }
 
 #chat-powered-by a:hover {

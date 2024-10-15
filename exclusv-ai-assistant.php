@@ -2,13 +2,13 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.5
+Version: 1.0.6
 Author: Exclusv.ai
 Author URI: https://www.exclusv.ai
 */
 
 // Define plugin version constant
-define('EXCLUSV_AI_VERSION', '1.0.5');
+define('EXCLUSV_AI_VERSION', '1.0.6');
 
 // Include the shortcodes file
 require_once plugin_dir_path(__FILE__) . 'includes/enqueue-scripts.php';
@@ -386,3 +386,9 @@ function exclusv_ai_add_action_links($links) {
 
 // Add this line to hook the new function
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'exclusv_ai_add_action_links');
+
+add_action('admin_init', function () {
+    if (isset($_GET['create_exclusv_ai_table'])) {
+        exclusv_ai_manually_create_chat_history_table();
+    }
+});

@@ -14,19 +14,12 @@ function exclusv_ai_create_chat_history_table()
         start_time datetime NOT NULL,
         sender varchar(20) NOT NULL,
         message text NOT NULL,
+        email_submitted tinyint(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (id)
     ) $charset_collate;";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
-
-    // Check if the email_submitted column exists
-    $column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'email_submitted'");
-
-    if (!$column_exists) {
-        // Add the email_submitted column if it doesn't exist
-        $wpdb->query("ALTER TABLE $table_name ADD COLUMN email_submitted tinyint(1) NOT NULL DEFAULT 0");
-    }
 
     // Check if the table was created successfully
     if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
@@ -57,7 +50,7 @@ function exclusv_ai_save_chat_history($chat_id, $start_time, $sender, $message, 
         return; // Exit the function if the table doesn't exist
     }
 
-    $wpdb->insert(
+    $result = $wpdb->insert(
         $table_name,
         [
             'chat_id' => sanitize_text_field($chat_id),
@@ -68,6 +61,12 @@ function exclusv_ai_save_chat_history($chat_id, $start_time, $sender, $message, 
         ],
         ['%s', '%s', '%s', '%s', '%d']
     );
+
+    if ($result === false) {
+        error_log("Failed to insert chat history: " . $wpdb->last_error);
+    } else {
+        error_log("Successfully inserted chat history with ID: " . $wpdb->insert_id);
+    }
 }
 
 function exclusv_ai_get_chat_history($chat_id) {
