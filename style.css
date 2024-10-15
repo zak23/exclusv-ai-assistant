@@ -161,6 +161,7 @@
 
 #email-capture h6 {
   color: #333333 !important;
+  font-size: 16px !important; /* Set the font size to 16px */
 }
 
 #email-input {
