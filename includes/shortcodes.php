@@ -46,7 +46,7 @@ function exclusv_ai_chat_shortcode()
                 <button id="send-button" class="btn btn-primary">Send</button>
             </div>
         </div>
-        <div id="chat-powered-by" class="card-footer text-muted">Powered by <a href="https://exclusv.ai" target="_blank">Exclusv.ai</a></div>
+        <div id="chat-powered-by" class="card-footer text-muted">Powered by <a href="https://exclusv.ai" target="_blank" title="Adult Industry AI">Exclusv.ai</a></div>
     </div>
     <div id="chat-button" class="btn btn-primary rounded-circle">
         <i class="fas fa-comment-alt"></i>

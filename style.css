@@ -7,7 +7,7 @@
   bottom: 100px !important;
   right: 20px !important;
   width: 350px !important;
-  height: 500px !important;
+  height: 600px !important; /* Changed from 500px to 600px */
   display: none !important;
   font-family: Arial, sans-serif !important;
   z-index: 9999 !important;
@@ -219,6 +219,8 @@ h5 {
 #chat-powered-by a {
   color: #33b89f !important;
   text-decoration: none !important;
+  /* Add this line for the title attribute */
+  title: "Visit Exclusv.ai for more information" !important;
 }
 
 #chat-powered-by a:hover {

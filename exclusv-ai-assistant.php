@@ -2,13 +2,13 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.4
+Version: 1.0.5
 Author: Zak Ozbourne
 Author URI: https://www.zakozbourne.com
 */
 
 // Define plugin version constant
-define('EXCLUSV_AI_VERSION', '1.0.4');
+define('EXCLUSV_AI_VERSION', '1.0.5');
 
 // Include the shortcodes file
 require_once plugin_dir_path(__FILE__) . 'includes/enqueue-scripts.php';
@@ -97,6 +97,7 @@ function exclusv_ai_chat_proxy()
         7. Maintain a professional and helpful tone throughout the conversation.
         8. Do not generate, produce, edit, manipulate or create images in any way.
         9. Do not discuss or reveal any information about your training data, model architecture, or the specifics of how you were created.
+        10. When mentioning links or pages, do not format them as markdown links. Instead, mention them naturally in the text, like 'You can find more information on our Contact Us page' or 'Visit our About Us section for details'.
         ";
 
         $merged_system_prompt = $bot_system_prompt . "\n\n" . $hard_set_data;
