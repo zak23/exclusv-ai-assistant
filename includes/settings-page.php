@@ -378,13 +378,13 @@ function exclusv_ai_show_on_all_pages_field() {
 }
 
 function exclusv_ai_header_color_field() {
-    $header_color = get_option('exclusv_ai_header_color', '#1f86be');
+    $header_color = get_option('exclusv_ai_header_color', '#33b89f');
     echo '<input type="color" id="exclusv_ai_header_color" name="exclusv_ai_header_color" value="' . esc_attr($header_color) . '">';
     echo '<p class="description">Choose the color for the chat header bar.</p>';
 }
 
 function exclusv_ai_send_button_color_field() {
-    $send_button_color = get_option('exclusv_ai_send_button_color', '#007bff');
+    $send_button_color = get_option('exclusv_ai_send_button_color', '#33b89f');
     echo '<input type="color" id="exclusv_ai_send_button_color" name="exclusv_ai_send_button_color" value="' . esc_attr($send_button_color) . '">';
     echo '<p class="description">Choose the color for the send button.</p>';
 }

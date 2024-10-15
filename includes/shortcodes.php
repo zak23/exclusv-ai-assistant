@@ -3,6 +3,18 @@
 // Add shortcode for displaying the AI chat interface
 function exclusv_ai_chat_shortcode()
 {
+    // Add this at the beginning of the function
+    $header_color = get_option('exclusv_ai_header_color', '#33b89f');
+    $send_button_color = get_option('exclusv_ai_send_button_color', '#33b89f');
+    
+    echo "<style>
+        :root {
+            --header-color: {$header_color};
+            --send-button-color: {$send_button_color};
+        }
+    </style>";
+
+    // Rest of the function remains the same
     ob_start();
     $site_name = get_bloginfo('name');
 ?>
@@ -34,6 +46,7 @@ function exclusv_ai_chat_shortcode()
                 <button id="send-button" class="btn btn-primary">Send</button>
             </div>
         </div>
+        <div id="chat-powered-by" class="card-footer text-muted">Powered by <a href="https://exclusv.ai" target="_blank">Exclusv.ai</a></div>
     </div>
     <div id="chat-button" class="btn btn-primary rounded-circle">
         <i class="fas fa-comment-alt"></i>

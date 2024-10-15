@@ -17,11 +17,12 @@
 }
 
 #chat-header {
-  background-color: var(--header-color, #1f86be);
+  background-color: var(--header-color, #33b89f);
   color: white !important;
   font-weight: bold !important;
   cursor: pointer !important;
   border-radius: 0 !important;
+  padding: 10px 15px !important; /* Add padding to the header */
 }
 
 #chat-messages {
@@ -70,11 +71,16 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.3s !important;
   z-index: 9999 !important;
-  /* background-color: var(--header-color, #1f86be) !important; */
+  background-color: var(--header-color, #33b89f) !important; /* Use the header color variable */
+  border-radius: 50% !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 #chat-button:hover {
   transform: scale(1.1) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 #chat-button i {
@@ -82,9 +88,9 @@
   font-size: 24px !important;
 }
 
-/* Add this new rule for the send button */
+/* Update the send button style */
 #chat-input button {
-  /* background-color: var(--send-button-color, #007bff) !important; */
+  background-color: var(--send-button-color, #33b89f) !important; /* Use the send button color variable */
   color: white !important;
   border: none !important;
   padding: 5px 10px !important;
@@ -174,23 +180,47 @@ h5 {
 /* Add these styles at the end of the file */
 
 .exclusv-ai-shortcode-readme {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border: 1px solid #e5e5e5;
-    border-radius: 4px;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
 }
 
 .exclusv-ai-shortcode-readme h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #23282d;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #23282d;
 }
 
 .exclusv-ai-shortcode-readme code {
-    display: inline-block;
-    padding: 3px 5px;
-    font-size: 13px;
-    background-color: #e5e5e5;
-    border-radius: 3px;
+  display: inline-block;
+  padding: 3px 5px;
+  font-size: 13px;
+  background-color: #e5e5e5;
+  border-radius: 3px;
+}
+
+#chat-header h5 {
+  font-size: 20px !important;
+  margin: 0 !important; /* Remove default margins */
+  padding: 5px 0 !important; /* Add vertical padding */
+}
+
+/* Add this at the end of the file */
+#chat-powered-by {
+  font-size: 12px !important;
+  text-align: center !important;
+  padding: 5px !important;
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e9ecef !important;
+}
+
+#chat-powered-by a {
+  color: #33b89f !important;
+  text-decoration: none !important;
+}
+
+#chat-powered-by a:hover {
+  text-decoration: underline !important;
 }
