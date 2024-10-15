@@ -2,7 +2,7 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.1
+Version: 1.0.2
 Author: Zak Ozbourne
 Author URI: https://www.zakozbourne.com
 */
@@ -342,3 +342,16 @@ function exclusv_ai_admin_notices() {
         echo '<div class="notice notice-error is-dismissible"><p>An error occurred: ' . esc_html($_GET['error']) . '</p></div>';
     }
 }
+
+// Add this new function near the end of the file
+function exclusv_ai_add_action_links($links) {
+    $settings_link = '<a href="' . admin_url('options-general.php?page=exclusv_ai_settings') . '">Settings</a>';
+    $chat_history_link = '<a href="' . admin_url('tools.php?page=exclusv_ai_chat_history') . '">Chat History</a>';
+    
+    array_unshift($links, $settings_link, $chat_history_link);
+    
+    return $links;
+}
+
+// Add this line to hook the new function
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'exclusv_ai_add_action_links');

@@ -1,3 +1,7 @@
+/* Exclusv AI Assistant Styles */
+
+/* Chat Interface */
+
 #exclusv-ai-chat {
   position: fixed !important;
   bottom: 100px !important;
@@ -9,15 +13,15 @@
   z-index: 9999 !important;
   flex-direction: column !important;
   overflow: hidden !important;
+  border-radius: 0 !important;
 }
 
 #chat-header {
-  background-color: var(--header-color, #1f86be) !important;
+  background-color: var(--header-color, #1f86be);
   color: white !important;
   font-weight: bold !important;
-  border-top-left-radius: 10px !important;
-  border-top-right-radius: 10px !important;
   cursor: pointer !important;
+  border-radius: 0 !important;
 }
 
 #chat-messages {
@@ -29,7 +33,6 @@
 .message {
   margin-bottom: 15px !important;
   padding: 10px !important;
-  border-radius: 10px !important;
   max-width: 80% !important;
 }
 
@@ -67,7 +70,7 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.3s !important;
   z-index: 9999 !important;
-  background-color: var(--header-color, #1f86be) !important;
+  /* background-color: var(--header-color, #1f86be) !important; */
 }
 
 #chat-button:hover {
@@ -77,6 +80,15 @@
 #chat-button i {
   color: white !important;
   font-size: 24px !important;
+}
+
+/* Add this new rule for the send button */
+#chat-input button {
+  /* background-color: var(--send-button-color, #007bff) !important; */
+  color: white !important;
+  border: none !important;
+  padding: 5px 10px !important;
+  cursor: pointer !important;
 }
 
 .typing-dots {
@@ -153,4 +165,32 @@
 .error {
   background-color: #ffebee !important;
   color: #b71c1c !important;
+}
+
+h5 {
+  font-size: 20px !important;
+}
+
+/* Add these styles at the end of the file */
+
+.exclusv-ai-shortcode-readme {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+}
+
+.exclusv-ai-shortcode-readme h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #23282d;
+}
+
+.exclusv-ai-shortcode-readme code {
+    display: inline-block;
+    padding: 3px 5px;
+    font-size: 13px;
+    background-color: #e5e5e5;
+    border-radius: 3px;
 }

@@ -367,6 +367,14 @@ function exclusv_ai_show_on_all_pages_field() {
     echo '<input type="checkbox" id="exclusv_ai_show_on_all_pages" name="exclusv_ai_show_on_all_pages" value="1" ' . checked(1, $show_on_all_pages, false) . '>';
     echo '<label for="exclusv_ai_show_on_all_pages">Automatically add the chat interface to all pages</label>';
     echo '<p class="description">When checked, the chat interface will be automatically added to the bottom of all pages.</p>';
+    
+    // Add the shortcode usage readme
+    echo '<div class="exclusv-ai-shortcode-readme">';
+    echo '<h4>Shortcode Usage</h4>';
+    echo '<p>If you prefer to add the chat interface manually, you can use the following shortcode:</p>';
+    echo '<code>[exclusv_ai_chat]</code>';
+    echo '<p>Simply add this shortcode to any page or post where you want the chat interface to appear.</p>';
+    echo '</div>';
 }
 
 function exclusv_ai_header_color_field() {
