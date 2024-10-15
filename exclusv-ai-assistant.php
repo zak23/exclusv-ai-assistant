@@ -2,7 +2,7 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.2
+Version: 1.0.3
 Author: Zak Ozbourne
 Author URI: https://www.zakozbourne.com
 */
