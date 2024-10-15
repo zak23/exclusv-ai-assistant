@@ -79,16 +79,11 @@ function exclusv_ai_chat_shortcode()
             submitEmail(event);
         });
 
-        // Find the existing event listeners section and add this new listener
         emailInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 submitEmail();
             }
         });
-
-        // Add this near the top of the JavaScript code
-        console.log('Initial messageCount:', messageCount);
-        console.log('Message limit:', exclusvAiSettings.messageLimit);
 
         function toggleChatVisibility() {
             if (chatContainer.classList.contains('open')) {
@@ -98,11 +93,9 @@ function exclusv_ai_chat_shortcode()
                 chatContainer.classList.add('open');
                 localStorage.setItem('chatClosed', 'false');
 
-                // Clear the chat messages container before appending the chat history
                 var chatMessages = document.getElementById('chat-messages');
                 chatMessages.innerHTML = '';
 
-                // Retrieve and display the chat history from local storage
                 var chatHistory = localStorage.getItem('chatHistory');
                 if (chatHistory) {
                     chatHistory = JSON.parse(chatHistory);
@@ -113,7 +106,6 @@ function exclusv_ai_chat_shortcode()
             }
         }
 
-        // Update the sendMessage function
         function sendMessage() {
             var message = userInput.value.trim();
             if (message !== '') {
@@ -124,18 +116,12 @@ function exclusv_ai_chat_shortcode()
                 messageCount = parseInt(messageCount) + 1;
                 localStorage.setItem('messageCount', messageCount);
 
-                console.log('Updated messageCount:', messageCount);
-                console.log('Message limit:', exclusvAiSettings.messageLimit);
-
-                // Use the localized message limit
                 var messageLimit = parseInt(exclusvAiSettings.messageLimit);
 
                 if (messageCount >= messageLimit) {
-                    console.log('Message limit reached. Showing email capture.');
                     showEmailCapture();
                 }
 
-                // Store the user's message in the chat history
                 var chatHistory = localStorage.getItem('chatHistory');
                 if (chatHistory) {
                     chatHistory = JSON.parse(chatHistory);
@@ -150,16 +136,12 @@ function exclusv_ai_chat_shortcode()
             }
         }
 
-        // Add this new function
         function showEmailCapture() {
             chatInput.style.display = 'none';
             emailCapture.style.display = 'block';
-            // Update the email prompt message
             document.querySelector('#email-capture h6').textContent = exclusvAiSettings.emailPromptMessage;
-            console.log('Email capture displayed');
         }
 
-        // Update the submitEmail function to prevent form submission if it exists
         function submitEmail(event) {
             if (event) {
                 event.preventDefault();
@@ -171,22 +153,18 @@ function exclusv_ai_chat_shortcode()
                     chatHistory = JSON.parse(chatHistory);
                     sendEmailToAdmin(email, chatHistory);
 
-                    // Update the email submitted flag for all messages in the chat
                     var chatId = localStorage.getItem('chatId');
                     var startTime = localStorage.getItem('startTime');
                     updateEmailSubmitted(chatId, true);
 
-                    // Store the email submission status in local storage
                     localStorage.setItem('emailSubmitted', 'true');
                 }
                 showThankYouMessage();
             } else {
-                // Show an error message if the email is invalid
                 showEmailError('Please enter a valid email address.');
             }
         }
 
-        // Add this new function to show email error messages
         function showEmailError(message) {
             var errorElement = document.getElementById('email-error');
             if (!errorElement) {
@@ -226,7 +204,6 @@ function exclusv_ai_chat_shortcode()
         }
 
         function sendMessageToServer(message) {
-            // console.log('sendMessageToServer called with message:', message);
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '<?php echo admin_url('admin-ajax.php'); ?>');
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -237,7 +214,6 @@ function exclusv_ai_chat_shortcode()
                         var assistantMessage = response.data.choices[0].message.content;
                         displayMessage(assistantMessage, 'assistant');
 
-                        // Store the assistant's message in the chat history
                         var chatHistory = localStorage.getItem('chatHistory');
                         if (chatHistory) {
                             chatHistory = JSON.parse(chatHistory);
@@ -250,7 +226,6 @@ function exclusv_ai_chat_shortcode()
                         });
                         localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
 
-                        // Save the assistant's message to the database
                         var chatId = localStorage.getItem('chatId');
                         var startTime = localStorage.getItem('startTime');
                         saveChatMessage(chatId, startTime, 'assistant', assistantMessage);
@@ -274,18 +249,9 @@ function exclusv_ai_chat_shortcode()
             var data = 'action=exclusv_ai_chat_proxy&message=' + encodeURIComponent(message) + '&chat_id=' + encodeURIComponent(chatId) + '&start_time=' + encodeURIComponent(startTime);
             xhr.send(data);
             showTypingIndicator();
-
-            // We're removing this line to prevent double saving of user messages
-            // saveChatMessage(chatId, startTime, 'user', message);
         }
 
         function saveChatMessage(chatId, startTime, sender, message) {
-            // console.log('saveChatMessage called with:', {
-            //     chatId,
-            //     startTime,
-            //     sender,
-            //     message
-            // });
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '<?php echo admin_url('admin-ajax.php'); ?>');
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -348,33 +314,26 @@ function exclusv_ai_chat_shortcode()
             localStorage.removeItem('messageCount');
         }
 
-        // Send initial message from the AI
         window.addEventListener('load', function() {
             var initialMessage = <?php echo json_encode(get_option('exclusv_ai_initial_message', "Welcome to " . $site_name . "! I'm your AI assistant. How can I assist you today?")); ?>;
 
-            // Check if the chat was previously closed
             var chatClosed = localStorage.getItem('chatClosed');
 
             if (chatClosed !== 'true') {
-                // Open the chat after 5 seconds if it was not previously closed
                 setTimeout(function() {
                     chatContainer.classList.add('open');
 
-                    // Check if a chat ID and start time exist in local storage
                     var chatId = localStorage.getItem('chatId');
                     var startTime = localStorage.getItem('startTime');
 
                     if (!chatId || !startTime) {
-                        // If no chat ID or start time exists, start a new chat
                         startNewChat();
                     }
 
-                    // Retrieve the chat history from local storage
                     var chatHistory = localStorage.getItem('chatHistory');
                     if (chatHistory) {
                         chatHistory = JSON.parse(chatHistory);
                     } else {
-                        // If no chat history exists, create a new chat and store the initial message
                         chatHistory = [{
                             sender: 'assistant',
                             message: initialMessage
@@ -382,38 +341,27 @@ function exclusv_ai_chat_shortcode()
                         localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
                     }
 
-                    // Display the chat history
                     chatHistory.forEach(function(message) {
                         displayMessage(message.message, message.sender);
                     });
                 }, 1000);
             }
 
-            // Retrieve the message count from local storage
             messageCount = parseInt(localStorage.getItem('messageCount')) || 0;
-            console.log('Loaded messageCount:', messageCount);
 
-            // Use the localized message limit
             var messageLimit = parseInt(exclusvAiSettings.messageLimit);
-            console.log('Loaded message limit:', messageLimit);
 
-            // Check if the email has been submitted
             var emailSubmitted = localStorage.getItem('emailSubmitted');
 
             if (messageCount >= messageLimit && emailSubmitted !== 'true') {
-                console.log('Message limit reached on load. Showing email capture.');
                 showEmailCapture();
             } else if (emailSubmitted === 'true') {
-                console.log('Email already submitted. Showing thank you message.');
                 showThankYouMessage();
             } else {
-                console.log('Showing chat input.');
                 chatInput.style.display = 'block';
                 emailCapture.style.display = 'none';
             }
         });
-
-        // Add this function near the other JavaScript-related functions
 
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
