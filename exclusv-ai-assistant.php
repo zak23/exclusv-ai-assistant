@@ -2,13 +2,13 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.9  
+Version: 1.0.10  // Updated version number
 Author: Exclusv.ai
 Author URI: https://www.exclusv.ai
 */
 
 // Define plugin version constant
-define('EXCLUSV_AI_VERSION', '1.0.8');
+define('EXCLUSV_AI_VERSION', '1.0.10');  // Updated version constant
 
 // Include the shortcodes file
 require_once plugin_dir_path(__FILE__) . 'includes/enqueue-scripts.php';
@@ -82,8 +82,10 @@ function exclusv_ai_chat_proxy()
             }
         }
 
-        $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
         $bot_context = get_option('exclusv_ai_bot_context', '');
+        $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
+
+        // Add hard-set data to keep the bot on track
         $hard_set_data = "
         Important guidelines:
         1. Always stay on topic and provide accurate information based on the website's content.
@@ -100,7 +102,19 @@ function exclusv_ai_chat_proxy()
         12. Never use markdown formatting for links or any other text. Always provide plain text responses.
         ";
 
+        // Rearrange the prompt data
+        $merged_system_prompt = $bot_system_prompt;
+
+        if (!empty($bot_context)) {
+            $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
+        }
+
+        if (!empty($post_types_content)) {
+            $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
+        }
+
         $selected_pages = get_option('exclusv_ai_selected_pages', []);
+
         $page_content = '';
         foreach ($selected_pages as $page_id) {
             $page = get_post($page_id);
@@ -109,22 +123,11 @@ function exclusv_ai_chat_proxy()
             }
         }
 
-        // Rearrange the prompt data
-        $merged_system_prompt = $bot_system_prompt;
-
-        if (!empty($bot_context)) {
-            $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
-        }
-
         if (!empty($page_content)) {
             $merged_system_prompt .= "\n\nHere is the content from selected pages:\n" . $page_content;
         }
 
         $merged_system_prompt .= "\n\n" . $hard_set_data;
-
-        if (!empty($post_types_content)) {
-            $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
-        }
 
         $initial_message = get_option('exclusv_ai_initial_message', "Welcome! I'm your AI assistant. How can I assist you today?");
 
@@ -435,10 +438,11 @@ register_setting('exclusv_ai_settings', 'exclusv_ai_message_limit', array(
     'default' => 10
 ));
 
-// Add a shortcode to display the merged prompt for debugging
+// Add a shortcode to display the merged prompt data
 function exclusv_ai_display_merged_prompt() {
-    $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
     $bot_context = get_option('exclusv_ai_bot_context', '');
+    $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
+
     $hard_set_data = "
     Important guidelines:
     1. Always stay on topic and provide accurate information based on the website's content.
@@ -455,6 +459,33 @@ function exclusv_ai_display_merged_prompt() {
     12. Never use markdown formatting for links or any other text. Always provide plain text responses.
     ";
 
+    $merged_system_prompt = $bot_system_prompt;
+
+    if (!empty($bot_context)) {
+        $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
+    }
+
+    $selected_post_types = get_option('exclusv_ai_post_types', []);
+    $post_types_content = '';
+    foreach ($selected_post_types as $post_type) {
+        $posts_query = new WP_Query([
+            'post_type' => $post_type,
+            'posts_per_page' => -1,
+        ]);
+
+        if ($posts_query->have_posts()) {
+            while ($posts_query->have_posts()) {
+                $posts_query->the_post();
+                $post_types_content .= get_the_title() . ': ' . get_the_content() . "\n";
+            }
+            wp_reset_postdata();
+        }
+    }
+
+    if (!empty($post_types_content)) {
+        $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
+    }
+
     $selected_pages = get_option('exclusv_ai_selected_pages', []);
     $page_content = '';
     foreach ($selected_pages as $page_id) {
@@ -464,26 +495,13 @@ function exclusv_ai_display_merged_prompt() {
         }
     }
 
-    $post_types_content = ''; // Assuming this is defined elsewhere in your code
-
-    // Rearrange the prompt data
-    $merged_system_prompt = $bot_system_prompt;
-
-    if (!empty($bot_context)) {
-        $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
-    }
-
     if (!empty($page_content)) {
         $merged_system_prompt .= "\n\nHere is the content from selected pages:\n" . $page_content;
     }
 
     $merged_system_prompt .= "\n\n" . $hard_set_data;
 
-    if (!empty($post_types_content)) {
-        $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
-    }
-
-    // Return the merged prompt wrapped in <pre> tags for formatting
-    return "<pre>" . esc_html($merged_system_prompt) . "</pre>";
+    return '<pre>' . esc_html($merged_system_prompt) . '</pre>';
 }
 add_shortcode('exclusv_ai_merged_prompt', 'exclusv_ai_display_merged_prompt');
+
