@@ -2,7 +2,7 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.8  
+Version: 1.0.9  
 Author: Exclusv.ai
 Author URI: https://www.exclusv.ai
 */
