@@ -76,7 +76,7 @@ function exclusv_ai_chat_proxy()
             if ($posts_query->have_posts()) {
                 while ($posts_query->have_posts()) {
                     $posts_query->the_post();
-                    $post_types_content .= get_the_title() . ': ' . get_the_content() . "\n";
+                    $post_types_content .= get_the_title() . ': ' . get_the_excerpt() . "\n"; // Use get_the_excerpt() instead of get_the_content()
                 }
                 wp_reset_postdata();
             }
@@ -476,7 +476,7 @@ function exclusv_ai_display_merged_prompt() {
         if ($posts_query->have_posts()) {
             while ($posts_query->have_posts()) {
                 $posts_query->the_post();
-                $post_types_content .= get_the_title() . ': ' . get_the_content() . "\n";
+                $post_types_content .= get_the_title() . ': ' . get_the_excerpt() . "\n"; // Use get_the_excerpt() instead of get_the_content()
             }
             wp_reset_postdata();
         }
@@ -504,4 +504,5 @@ function exclusv_ai_display_merged_prompt() {
     return '<pre>' . esc_html($merged_system_prompt) . '</pre>';
 }
 add_shortcode('exclusv_ai_merged_prompt', 'exclusv_ai_display_merged_prompt');
+
 
