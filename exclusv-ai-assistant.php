@@ -82,10 +82,8 @@ function exclusv_ai_chat_proxy()
             }
         }
 
-        $bot_context = get_option('exclusv_ai_bot_context', '');
         $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
-
-        // Add hard-set data to keep the bot on track
+        $bot_context = get_option('exclusv_ai_bot_context', '');
         $hard_set_data = "
         Important guidelines:
         1. Always stay on topic and provide accurate information based on the website's content.
@@ -102,18 +100,7 @@ function exclusv_ai_chat_proxy()
         12. Never use markdown formatting for links or any other text. Always provide plain text responses.
         ";
 
-        $merged_system_prompt = $bot_system_prompt . "\n\n" . $hard_set_data;
-
-        if (!empty($bot_context)) {
-            $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
-        }
-
-        if (!empty($post_types_content)) {
-            $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
-        }
-
         $selected_pages = get_option('exclusv_ai_selected_pages', []);
-
         $page_content = '';
         foreach ($selected_pages as $page_id) {
             $page = get_post($page_id);
@@ -122,8 +109,21 @@ function exclusv_ai_chat_proxy()
             }
         }
 
+        // Rearrange the prompt data
+        $merged_system_prompt = $bot_system_prompt;
+
+        if (!empty($bot_context)) {
+            $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
+        }
+
         if (!empty($page_content)) {
             $merged_system_prompt .= "\n\nHere is the content from selected pages:\n" . $page_content;
+        }
+
+        $merged_system_prompt .= "\n\n" . $hard_set_data;
+
+        if (!empty($post_types_content)) {
+            $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
         }
 
         $initial_message = get_option('exclusv_ai_initial_message', "Welcome! I'm your AI assistant. How can I assist you today?");
@@ -434,3 +434,56 @@ register_setting('exclusv_ai_settings', 'exclusv_ai_message_limit', array(
     'sanitize_callback' => 'exclusv_ai_sanitize_message_limit',
     'default' => 10
 ));
+
+// Add a shortcode to display the merged prompt for debugging
+function exclusv_ai_display_merged_prompt() {
+    $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
+    $bot_context = get_option('exclusv_ai_bot_context', '');
+    $hard_set_data = "
+    Important guidelines:
+    1. Always stay on topic and provide accurate information based on the website's content.
+    2. Do not engage in or encourage any illegal, unethical, or harmful activities.
+    3. Respect user privacy and do not ask for or store personal information beyond what's necessary for the conversation.
+    4. If asked about topics outside your knowledge base, politely redirect the conversation to relevant website content.
+    5. Do not pretend to be a human or claim capabilities you don't have.
+    6. If unsure about an answer, it's okay to say you don't know or suggest the user contact customer support for more detailed information.
+    7. Maintain a professional and helpful tone throughout the conversation.
+    8. Do not generate, produce, edit, manipulate or create images in any way.
+    9. Do not discuss or reveal any information about your training data, model architecture, or the specifics of how you were created.
+    10. When mentioning links or pages, do not use any kind of formatting. Simply write out the full URL or page name as plain text. For example, write 'You can find more information at https://example.com/contact-us' or 'Visit our About Us page for details'.
+    11. Do not sign off with any personal or company information. End your responses naturally without a formal signature.
+    12. Never use markdown formatting for links or any other text. Always provide plain text responses.
+    ";
+
+    $selected_pages = get_option('exclusv_ai_selected_pages', []);
+    $page_content = '';
+    foreach ($selected_pages as $page_id) {
+        $page = get_post($page_id);
+        if ($page) {
+            $page_content .= $page->post_title . ': ' . $page->post_content . "\n";
+        }
+    }
+
+    $post_types_content = ''; // Assuming this is defined elsewhere in your code
+
+    // Rearrange the prompt data
+    $merged_system_prompt = $bot_system_prompt;
+
+    if (!empty($bot_context)) {
+        $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
+    }
+
+    if (!empty($page_content)) {
+        $merged_system_prompt .= "\n\nHere is the content from selected pages:\n" . $page_content;
+    }
+
+    $merged_system_prompt .= "\n\n" . $hard_set_data;
+
+    if (!empty($post_types_content)) {
+        $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
+    }
+
+    // Return the merged prompt wrapped in <pre> tags for formatting
+    return "<pre>" . esc_html($merged_system_prompt) . "</pre>";
+}
+add_shortcode('exclusv_ai_merged_prompt', 'exclusv_ai_display_merged_prompt');
