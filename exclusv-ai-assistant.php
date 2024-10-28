@@ -178,6 +178,20 @@ function exclusv_ai_chat_proxy()
 
             if ($http_code === 200) {
                 $response_data = json_decode($response, true);
+
+                // Process the response to replace markdown links with HTML links
+                if (isset($response_data['choices'][0]['message']['content'])) {
+                    $response_content = $response_data['choices'][0]['message']['content'];
+                    $response_content = preg_replace_callback(
+                        '/\[(.*?)\]\((.*?)\)/',
+                        function ($matches) {
+                            return '<a href="' . esc_url($matches[2]) . '" target="_blank">' . esc_html($matches[1]) . '</a>';
+                        },
+                        $response_content
+                    );
+                    $response_data['choices'][0]['message']['content'] = $response_content;
+                }
+
                 // Add this line for debugging
                 error_log("API response: " . print_r($response_data, true));
                 wp_send_json_success($response_data);

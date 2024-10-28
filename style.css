@@ -181,9 +181,9 @@
 }
 
 /* Remove this hover effect */
-#submit-email:hover {
+/* #submit-email:hover { */
   /* background-color: darken(var(--send-button-color, #33b89f), 10%) !important; */
-}
+/* } */
 
 .error {
   background-color: #ffebee !important;
@@ -240,4 +240,15 @@ h5 {
 
 #chat-powered-by a:hover {
   text-decoration: underline !important;
+}
+
+/* Style links within the chat messages */
+#chat-messages a {
+  color: var(--send-button-color, #33b89f) !important; /* Use the send button color */
+  text-decoration: underline !important; /* Ensure links are underlined */
+}
+
+#chat-messages a:hover {
+  color: var(--send-button-color, #33b89f) !important; /* Keep the same color on hover */
+  text-decoration: underline !important; /* Maintain underline on hover */
 }
