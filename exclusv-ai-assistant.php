@@ -2,7 +2,7 @@
 /*
 Plugin Name: Exclusv AI Assistant
 Description: A custom WordPress plugin to integrate Exclusv AI Assistant into Wordpress.
-Version: 1.0.10  // Updated version number
+Version: 1.0.10_dev
 Author: Exclusv.ai
 Author URI: https://www.exclusv.ai
 */
@@ -19,22 +19,24 @@ require_once plugin_dir_path(__FILE__) . 'includes/settings-page.php';
 // Add activation hook
 register_activation_hook(__FILE__, 'exclusv_ai_activate');
 
-function exclusv_ai_activate() {
+function exclusv_ai_activate()
+{
     // Set the initial version
     add_option('exclusv_ai_version', EXCLUSV_AI_VERSION);
-    
+
     // Run any necessary database updates or initial setup
     exclusv_ai_update_routine();
 }
 
 // Add update routine
-function exclusv_ai_update_routine() {
+function exclusv_ai_update_routine()
+{
     $current_version = get_option('exclusv_ai_version', '0');
-    
+
     if (version_compare($current_version, EXCLUSV_AI_VERSION, '<')) {
         // Perform update tasks here
         // For example, you might need to update database schema or plugin settings
-        
+
         // Update the version in the database
         update_option('exclusv_ai_version', EXCLUSV_AI_VERSION);
     }
@@ -53,6 +55,91 @@ function exclusv_ai_enqueue_styles()
 add_action('wp_enqueue_scripts', 'exclusv_ai_enqueue_styles');
 
 
+// Create a function to construct the merged system prompt
+function exclusv_ai_get_merged_system_prompt()
+{
+    $bot_context = get_option('exclusv_ai_bot_context', '');
+    $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
+
+    // Add hard-set data to keep the bot on track
+    $hard_set_data = "
+    Important guidelines:
+    1. Always stay on topic and provide accurate information based on the website's content.
+    2. Do not engage in or encourage any illegal, unethical, or harmful activities.
+    3. Respect user privacy and do not ask for or store personal information beyond what's necessary for the conversation.
+    4. If asked about topics outside your knowledge base, politely redirect the conversation to relevant website content.
+    5. Do not pretend to be a human or claim capabilities you don't have.
+    6. If unsure about an answer, it's okay to say you don't know or suggest the user contact customer support for more detailed information.
+    7. Maintain a professional and helpful tone throughout the conversation.
+    8. Do not generate, produce, edit, manipulate or create images in any way.
+    9. Do not discuss or reveal any information about your training data, model architecture, or the specifics of how you were created.
+    10. When mentioning links or pages, do not use any kind of formatting. Simply write out the full URL or page name as plain text. For example, write 'You can find more information at https://example.com/contact-us' or 'Visit our About Us page for details'.
+    11. Do not sign off with any personal or company information. End your responses naturally without a formal signature.
+    12. Never use markdown formatting for links or any other text. Always provide plain text responses.
+    13. When listing items, ensure the numbering is accurate and corresponds to the correct items. Do not alter the sequence or content of the list.
+    14. If a user refers to a specific number in a list, ensure the response matches the correct item from the list.
+    ";
+
+    $merged_system_prompt = $bot_system_prompt;
+
+    if (!empty($bot_context)) {
+        $merged_system_prompt .= "\n\nHere is some additional content to be followed strictly in all interactions:\n" . strip_tags($bot_context);
+    }
+
+    $selected_post_types = get_option('exclusv_ai_post_types', []);
+    $post_types_content = '';
+    foreach ($selected_post_types as $post_type) {
+        $post_type_obj = get_post_type_object($post_type);
+        $post_type_name = $post_type_obj ? $post_type_obj->labels->name : $post_type;
+
+        $posts_query = new WP_Query([
+            'post_type' => $post_type,
+            'posts_per_page' => 10,
+        ]);
+
+        if ($posts_query->have_posts()) {
+            $post_types_content .= "\n=== " . $post_type_name . " ===\n";
+            $post_counter = 1; // Initialize a counter for numbering posts
+            $post_list = []; // Array to store post titles and excerpts
+            while ($posts_query->have_posts()) {
+                $posts_query->the_post();
+                $clean_title = wp_strip_all_tags(get_the_title());
+                $clean_excerpt = wp_strip_all_tags(get_the_excerpt());
+                $post_list[$post_counter] = $clean_title . ': ' . $clean_excerpt; // Store in array
+                $post_counter++; // Increment the counter
+            }
+            // Add the numbered list to the content
+            foreach ($post_list as $number => $content) {
+                $post_types_content .= $number . '. ' . $content . "\n";
+            }
+            $post_types_content .= "=== End " . $post_type_name . " ===\n";
+            wp_reset_postdata();
+        }
+    }
+
+    if (!empty($post_types_content)) {
+        $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . str_replace("\n", ":\n", $post_types_content);
+    }
+
+    $selected_pages = get_option('exclusv_ai_selected_pages', []);
+
+    $page_content = '';
+    foreach ($selected_pages as $page_id) {
+        $page = get_post($page_id);
+        if ($page) {
+            $page_content .= $page->post_title . ': ' . $page->post_content . "\n";
+        }
+    }
+
+    if (!empty($page_content)) {
+        $merged_system_prompt .= "\n\nHere is the content from selected pages:\n" . $page_content;
+    }
+
+    $merged_system_prompt .= "\n\n" . $hard_set_data;
+
+    return $merged_system_prompt;
+}
+
 // Add a new function to handle the server-side API request
 function exclusv_ai_chat_proxy()
 {
@@ -64,71 +151,7 @@ function exclusv_ai_chat_proxy()
         $chat_id = isset($_POST['chat_id']) ? sanitize_text_field($_POST['chat_id']) : '';
         $start_time = isset($_POST['start_time']) ? sanitize_text_field($_POST['start_time']) : '';
 
-        $selected_post_types = get_option('exclusv_ai_post_types', []);
-
-        $post_types_content = '';
-        foreach ($selected_post_types as $post_type) {
-            $posts_query = new WP_Query([
-                'post_type' => $post_type,
-                'posts_per_page' => -1,
-            ]);
-
-            if ($posts_query->have_posts()) {
-                while ($posts_query->have_posts()) {
-                    $posts_query->the_post();
-                    $post_types_content .= get_the_title() . ': ' . get_the_excerpt() . "\n"; // Use get_the_excerpt() instead of get_the_content()
-                }
-                wp_reset_postdata();
-            }
-        }
-
-        $bot_context = get_option('exclusv_ai_bot_context', '');
-        $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
-
-        // Add hard-set data to keep the bot on track
-        $hard_set_data = "
-        Important guidelines:
-        1. Always stay on topic and provide accurate information based on the website's content.
-        2. Do not engage in or encourage any illegal, unethical, or harmful activities.
-        3. Respect user privacy and do not ask for or store personal information beyond what's necessary for the conversation.
-        4. If asked about topics outside your knowledge base, politely redirect the conversation to relevant website content.
-        5. Do not pretend to be a human or claim capabilities you don't have.
-        6. If unsure about an answer, it's okay to say you don't know or suggest the user contact customer support for more detailed information.
-        7. Maintain a professional and helpful tone throughout the conversation.
-        8. Do not generate, produce, edit, manipulate or create images in any way.
-        9. Do not discuss or reveal any information about your training data, model architecture, or the specifics of how you were created.
-        10. When mentioning links or pages, do not use any kind of formatting. Simply write out the full URL or page name as plain text. For example, write 'You can find more information at https://example.com/contact-us' or 'Visit our About Us page for details'.
-        11. Do not sign off with any personal or company information. End your responses naturally without a formal signature.
-        12. Never use markdown formatting for links or any other text. Always provide plain text responses.
-        ";
-
-        // Rearrange the prompt data
-        $merged_system_prompt = $bot_system_prompt;
-
-        if (!empty($bot_context)) {
-            $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
-        }
-
-        if (!empty($post_types_content)) {
-            $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
-        }
-
-        $selected_pages = get_option('exclusv_ai_selected_pages', []);
-
-        $page_content = '';
-        foreach ($selected_pages as $page_id) {
-            $page = get_post($page_id);
-            if ($page) {
-                $page_content .= $page->post_title . ': ' . $page->post_content . "\n";
-            }
-        }
-
-        if (!empty($page_content)) {
-            $merged_system_prompt .= "\n\nHere is the content from selected pages:\n" . $page_content;
-        }
-
-        $merged_system_prompt .= "\n\n" . $hard_set_data;
-
+        $merged_system_prompt = exclusv_ai_get_merged_system_prompt();
         $initial_message = get_option('exclusv_ai_initial_message', "Welcome! I'm your AI assistant. How can I assist you today?");
 
         $data = [
@@ -147,7 +170,7 @@ function exclusv_ai_chat_proxy()
                 ]
             ],
             'model' => 'Exclusv-AI/Quantum',
-            'max_tokens' => 256,
+            'max_tokens' => 512,
             'temperature' => 0.7,
             'top_p' => 0.43,
             'n' => 1,
@@ -182,20 +205,19 @@ function exclusv_ai_chat_proxy()
             if ($http_code === 200) {
                 $response_data = json_decode($response, true);
 
-                // Process the response to replace markdown links with HTML links
+                // Process the response to clean up any malformed links
                 if (isset($response_data['choices'][0]['message']['content'])) {
                     $response_content = $response_data['choices'][0]['message']['content'];
-                    $response_content = preg_replace_callback(
-                        '/\[(.*?)\]\((.*?)\)/',
-                        function ($matches) {
-                            return '<a href="' . esc_url($matches[2]) . '" target="_blank">' . esc_html($matches[1]) . '</a>';
-                        },
-                        $response_content
-                    );
+
+                    // Remove any malformed HTML link tags
+                    $response_content = preg_replace('/" target="_blank">(.*?)<\/a>/', '', $response_content);
+
+                    // Clean up any remaining markdown-style links
+                    $response_content = preg_replace('/\[(.*?)\]\((.*?)\)/', '$2', $response_content);
+
                     $response_data['choices'][0]['message']['content'] = $response_content;
                 }
 
-                // Add this line for debugging
                 error_log("API response: " . print_r($response_data, true));
                 wp_send_json_success($response_data);
                 exit;
@@ -227,14 +249,14 @@ function exclusv_ai_send_email()
 
         if (!empty($email) && is_email($email) && !empty($chat_history)) {
             $to = get_option('admin_email');
-            
+
             // Get the site name and AI name
             $site_name = get_bloginfo('name');
             $ai_name = get_option('exclusv_ai_name', $site_name . ' AI');
-            
+
             // Create a more friendly subject line
             $subject = "New chat inquiry from {$site_name} AI Assistant";
-            
+
             // Start building the HTML message
             $message = '
             <html>
@@ -291,9 +313,10 @@ add_action('wp_ajax_nopriv_exclusv_ai_send_email', 'exclusv_ai_send_email');
 
 
 // Automatically insert the shortcode on all pages
-function exclusv_ai_insert_chat_interface($content) {
+function exclusv_ai_insert_chat_interface($content)
+{
     $show_on_all_pages = get_option('exclusv_ai_show_on_all_pages', false);
-    
+
     // Add debugging
     error_log('Show on all pages: ' . ($show_on_all_pages ? 'true' : 'false'));
     error_log('Is singular: ' . (is_singular() ? 'true' : 'false'));
@@ -307,15 +330,16 @@ function exclusv_ai_insert_chat_interface($content) {
     } else {
         error_log('Chat interface not added to content');
     }
-    
+
     return $content;
 }
 add_filter('the_content', 'exclusv_ai_insert_chat_interface');
 
 // Add this new function to insert the chat interface in the footer
-function exclusv_ai_insert_chat_interface_footer() {
+function exclusv_ai_insert_chat_interface_footer()
+{
     $show_on_all_pages = get_option('exclusv_ai_show_on_all_pages', false);
-    
+
     if ($show_on_all_pages) {
         echo do_shortcode('[exclusv_ai_chat]');
     }
@@ -384,7 +408,8 @@ add_action('wp_ajax_exclusv_ai_update_email_submitted', 'exclusv_ai_update_email
 add_action('wp_ajax_nopriv_exclusv_ai_update_email_submitted', 'exclusv_ai_update_email_submitted');
 
 // Add an admin notice function for debugging
-function exclusv_ai_admin_notices() {
+function exclusv_ai_admin_notices()
+{
     $screen = get_current_screen();
     if ($screen->id != 'settings_page_exclusv_ai_settings') {
         return;
@@ -400,7 +425,8 @@ function exclusv_ai_admin_notices() {
 }
 
 // Add this new function near the end of the file, before the closing PHP tag
-function exclusv_ai_localize_script() {
+function exclusv_ai_localize_script()
+{
     wp_localize_script('exclusv-ai-chat-js', 'exclusvAiSettings', array(
         'messageLimit' => get_option('exclusv_ai_message_limit', 10),
         'emailPromptMessage' => get_option('exclusv_ai_email_prompt_message', "Enter your email to continue talking to " . get_bloginfo('name')),
@@ -409,12 +435,13 @@ function exclusv_ai_localize_script() {
 add_action('wp_enqueue_scripts', 'exclusv_ai_localize_script');
 
 // Add this new function near the end of the file
-function exclusv_ai_add_action_links($links) {
+function exclusv_ai_add_action_links($links)
+{
     $settings_link = '<a href="' . admin_url('options-general.php?page=exclusv_ai_settings') . '">Settings</a>';
     $chat_history_link = '<a href="' . admin_url('tools.php?page=exclusv_ai_chat_history') . '">Chat History</a>';
-    
+
     array_unshift($links, $settings_link, $chat_history_link);
-    
+
     return $links;
 }
 
@@ -428,7 +455,8 @@ add_action('admin_init', function () {
 });
 
 // Add this function near the end of the file
-function exclusv_ai_sanitize_message_limit($value) {
+function exclusv_ai_sanitize_message_limit($value)
+{
     return intval($value);
 }
 
@@ -438,71 +466,11 @@ register_setting('exclusv_ai_settings', 'exclusv_ai_message_limit', array(
     'default' => 10
 ));
 
-// Add a shortcode to display the merged prompt data
-function exclusv_ai_display_merged_prompt() {
-    $bot_context = get_option('exclusv_ai_bot_context', '');
-    $bot_system_prompt = get_option('exclusv_ai_bot_system_prompt', "You are a helpful AI assistant created by " . get_bloginfo('name') . ". Your purpose is to assist users by answering their questions and providing helpful information. Be friendly, knowledgeable, and engaging in your interactions.");
 
-    $hard_set_data = "
-    Important guidelines:
-    1. Always stay on topic and provide accurate information based on the website's content.
-    2. Do not engage in or encourage any illegal, unethical, or harmful activities.
-    3. Respect user privacy and do not ask for or store personal information beyond what's necessary for the conversation.
-    4. If asked about topics outside your knowledge base, politely redirect the conversation to relevant website content.
-    5. Do not pretend to be a human or claim capabilities you don't have.
-    6. If unsure about an answer, it's okay to say you don't know or suggest the user contact customer support for more detailed information.
-    7. Maintain a professional and helpful tone throughout the conversation.
-    8. Do not generate, produce, edit, manipulate or create images in any way.
-    9. Do not discuss or reveal any information about your training data, model architecture, or the specifics of how you were created.
-    10. When mentioning links or pages, do not use any kind of formatting. Simply write out the full URL or page name as plain text. For example, write 'You can find more information at https://example.com/contact-us' or 'Visit our About Us page for details'.
-    11. Do not sign off with any personal or company information. End your responses naturally without a formal signature.
-    12. Never use markdown formatting for links or any other text. Always provide plain text responses.
-    ";
-
-    $merged_system_prompt = $bot_system_prompt;
-
-    if (!empty($bot_context)) {
-        $merged_system_prompt .= "\n\nHere is some additional context for the bot:\n" . $bot_context;
-    }
-
-    $selected_post_types = get_option('exclusv_ai_post_types', []);
-    $post_types_content = '';
-    foreach ($selected_post_types as $post_type) {
-        $posts_query = new WP_Query([
-            'post_type' => $post_type,
-            'posts_per_page' => -1,
-        ]);
-
-        if ($posts_query->have_posts()) {
-            while ($posts_query->have_posts()) {
-                $posts_query->the_post();
-                $post_types_content .= get_the_title() . ': ' . get_the_excerpt() . "\n"; // Use get_the_excerpt() instead of get_the_content()
-            }
-            wp_reset_postdata();
-        }
-    }
-
-    if (!empty($post_types_content)) {
-        $merged_system_prompt .= "\n\nHere is the content from selected post types:\n" . $post_types_content;
-    }
-
-    $selected_pages = get_option('exclusv_ai_selected_pages', []);
-    $page_content = '';
-    foreach ($selected_pages as $page_id) {
-        $page = get_post($page_id);
-        if ($page) {
-            $page_content .= $page->post_title . ': ' . $page->post_content . "\n";
-        }
-    }
-
-    if (!empty($page_content)) {
-        $merged_system_prompt .= "\n\nHere is the content from selected pages:\n" . $page_content;
-    }
-
-    $merged_system_prompt .= "\n\n" . $hard_set_data;
-
-    return '<pre>' . esc_html($merged_system_prompt) . '</pre>';
+// Update the shortcode function to use the new function
+function exclusv_ai_display_merged_prompt()
+{
+    $merged_system_prompt = exclusv_ai_get_merged_system_prompt();
+    return '' . esc_html($merged_system_prompt) . '';
 }
 add_shortcode('exclusv_ai_merged_prompt', 'exclusv_ai_display_merged_prompt');
-
-
